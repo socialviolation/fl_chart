@@ -100,10 +100,6 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
       _drawBarLine(canvasWrapper, barData, holder);
       _drawDots(canvasWrapper, barData, holder);
 
-      if (data.extraLinesData.extraLinesOnTop) {
-        _drawExtraLines(context, canvasWrapper, holder);
-      }
-
       _drawTouchedSpotsIndicator(canvasWrapper, barData, holder);
     }
 
@@ -113,6 +109,10 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
 
     drawAxisTitles(context, canvasWrapper, holder);
     _drawTitles(context, canvasWrapper, holder);
+
+    if (data.extraLinesData.extraLinesOnTop) {
+      _drawExtraLines(context, canvasWrapper, holder);
+    }
 
     // Draw touch tooltip on most top spot
     for (var i = 0; i < data.showingTooltipIndicators.length; i++) {
@@ -1051,7 +1051,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
 
         if (line.label.show) {
           final label = line.label;
-          final style = TextStyle(fontSize: 11, color: line.color).merge(label.style);
+          final style = TextStyle(fontSize: 11, color: line.color, overflow: TextOverflow.clip).merge(label.style);
           final padding = label.padding as EdgeInsets;
 
           final span = TextSpan(
@@ -1062,16 +1062,16 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
           final tp = TextPainter(
             text: span,
             textDirection: TextDirection.ltr,
+            maxLines: 1,
           );
-
           tp.layout();
           canvasWrapper.drawText(
               tp,
               label.alignment.withinRect(
                 Rect.fromLTRB(
-                  from.dx + padding.left,
+                  to.dx,
                   from.dy - padding.bottom - tp.height,
-                  to.dx - padding.right - tp.width,
+                  viewSize.width - rightChartPadding,
                   to.dy + padding.top,
                 ),
               ));
