@@ -106,36 +106,20 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
       drawBarLine(canvasWrapper, barData, holder);
       drawDots(canvasWrapper, barData, holder);
 
-      if (data.extraLinesData.extraLinesOnTop) {
-        drawExtraLines(context, canvasWrapper, holder);
-      }
-
-      final indicatorsData = data.lineTouchData
-          .getTouchedSpotIndicator(barData, barData.showingIndicators);
-
-      if (indicatorsData.length != barData.showingIndicators.length) {
-        throw Exception(
-            'indicatorsData and touchedSpotOffsets size should be same');
-      }
-
-      for (var j = 0; j < barData.showingIndicators.length; j++) {
-        final indicatorData = indicatorsData[j];
-        final index = barData.showingIndicators[j];
-        final spot = barData.spots[index];
-
-        if (indicatorData == null) {
-          continue;
-        }
-        lineIndexDrawingInfo.add(
-          LineIndexDrawingInfo(barData, i, spot, index, indicatorData),
-        );
-      }
+      _drawTouchedSpotsIndicator(canvasWrapper, barData, holder);
     }
 
     drawTouchedSpotsIndicator(canvasWrapper, lineIndexDrawingInfo, holder);
 
     if (data.clipData.any) {
       canvasWrapper.restore();
+    }
+
+    drawAxisTitles(context, canvasWrapper, holder);
+    _drawTitles(context, canvasWrapper, holder);
+
+    if (data.extraLinesData.extraLinesOnTop) {
+      _drawExtraLines(context, canvasWrapper, holder);
     }
 
     // Draw touch tooltip on most top spot
@@ -898,8 +882,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
 
         if (line.label.show) {
           final label = line.label;
-          final style =
-              TextStyle(fontSize: 11, color: line.color).merge(label.style);
+          final style = TextStyle(fontSize: 11, color: line.color, overflow: TextOverflow.clip).merge(label.style);
           final padding = label.padding as EdgeInsets;
 
           final span = TextSpan(
@@ -910,16 +893,16 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
           final tp = TextPainter(
             text: span,
             textDirection: TextDirection.ltr,
+            maxLines: 1,
           );
-
           tp.layout();
           canvasWrapper.drawText(
               tp,
               label.alignment.withinRect(
                 Rect.fromLTRB(
-                  from.dx + padding.left,
+                  to.dx,
                   from.dy - padding.bottom - tp.height,
-                  to.dx - padding.right - tp.width,
+                  viewSize.width - rightChartPadding,
                   to.dy + padding.top,
                 ),
               ));
