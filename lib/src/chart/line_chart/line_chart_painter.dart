@@ -902,7 +902,8 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
           final padding = label.padding as EdgeInsets;
 
           final span = TextSpan(
-            text: label.labelResolver(line),
+            text: '${label.labelResolver(line)}               .',
+
             style: Utils().getThemeAwareTextStyle(context, style),
           );
 
@@ -919,7 +920,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
                 Rect.fromLTRB(
                   from.dx + padding.left,
                   from.dy - padding.bottom - tp.height,
-                  to.dx - padding.right - tp.width,
+                  viewSize.width,
                   to.dy + padding.top,
                 ),
               ));
