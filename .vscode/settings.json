@@ -6,5 +6,8 @@
   "editor.tabCompletion": "onlySnippets",
   "editor.wordBasedSuggestions": false,
   "files.insertFinalNewline": true,
-  "editor.defaultFormatter": "Dart-Code.dart-code"
+  "editor.defaultFormatter": "Dart-Code.dart-code",
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

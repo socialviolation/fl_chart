@@ -134,6 +134,10 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
       canvasWrapper.restore();
     }
 
+    if (data.extraLinesData.extraLinesOnTop) {
+      drawExtraLines(context, canvasWrapper, holder);
+    }
+
     // Draw touch tooltip on most top spot
     for (var i = 0; i < data.showingTooltipIndicators.length; i++) {
       var tooltipSpots = data.showingTooltipIndicators[i];
@@ -159,10 +163,6 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
         tooltipSpots,
         holder,
       );
-    }
-
-    if (data.extraLinesData.extraLinesOnTop) {
-      drawExtraLines(context, canvasWrapper, holder);
     }
   }
 
@@ -898,19 +898,19 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
 
         if (line.label.show) {
           final label = line.label;
-          final style = TextStyle(fontSize: 11, color: line.color, overflow: TextOverflow.clip).merge(label.style);
+          final style = TextStyle(fontSize: 11, color: line.color, overflow: TextOverflow.fade).merge(label.style);
           final padding = label.padding as EdgeInsets;
 
           final span = TextSpan(
-            text: '${label.labelResolver(line)}               .',
-
-            style: Utils().getThemeAwareTextStyle(context, style),
+            text: '${label.labelResolver(line)}        .',
+            style: Utils().getThemeAwareTextStyle(context, style.copyWith(fontSize: (style.fontSize ?? 12) - 1, letterSpacing: .3)),
           );
 
           final tp = TextPainter(
             text: span,
             textDirection: TextDirection.ltr,
             maxLines: 1,
+            textAlign: TextAlign.center
           );
 
           tp.layout();
@@ -918,7 +918,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
               tp,
               label.alignment.withinRect(
                 Rect.fromLTRB(
-                  from.dx + padding.left,
+                  from.dx + padding.left ,
                   from.dy - padding.bottom - tp.height,
                   viewSize.width,
                   to.dy + padding.top,

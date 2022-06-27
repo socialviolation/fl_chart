@@ -132,6 +132,7 @@ class SideTitlesWidget extends StatelessWidget {
       final axisValues = AxisChartHelper().iterateThroughAxis(
         min: axisMin,
         max: axisMax,
+
         baseLine: axisBaseLine,
         interval: interval,
       );

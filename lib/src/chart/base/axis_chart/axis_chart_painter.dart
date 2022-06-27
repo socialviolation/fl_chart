@@ -87,9 +87,9 @@ abstract class AxisChartPainter<D extends AxisChartData>
 
       final axisValues = AxisChartHelper().iterateThroughAxis(
         min: data.minY,
-        minIncluded: true,
+        minIncluded: false,
         max: data.maxY,
-        maxIncluded: true,
+        maxIncluded: false,
         baseLine: data.baselineY,
         interval: horizontalInterval,
       );
