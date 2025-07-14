@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__consult7__consultation",
+      "Bash(git fetch:*)",
+      "Bash(git tag:*)",
+      "Bash(git checkout:*)",
+      "Bash(git rebase:*)",
+      "Bash(git add:*)",
+      "Bash(git merge:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "consult7"
+  ]
+}

@@ -4,24 +4,26 @@ import 'package:flutter/material.dart';
 
 /// Renders a radar chart as a widget, using provided [RadarChartData].
 class RadarChart extends ImplicitlyAnimatedWidget {
-  /// Determines how the [RadarChart] should be look like.
-  final RadarChartData data;
-
   /// [data] determines how the [RadarChart] should be look like,
   /// when you make any change in the [RadarChart], it updates
-  /// new values with animation, and duration is [swapAnimationDuration].
-  /// also you can change the [swapAnimationCurve]
+  /// new values with animation, and duration is [duration].
+  /// also you can change the [curve]
   /// which default is [Curves.linear].
   const RadarChart(
     this.data, {
-    Key? key,
-    Duration swapAnimationDuration = const Duration(milliseconds: 150),
-    Curve swapAnimationCurve = Curves.linear,
+    super.key,
+    @Deprecated('Please use [duration] instead')
+    Duration? swapAnimationDuration,
+    Duration duration = const Duration(milliseconds: 150),
+    @Deprecated('Please use [curve] instead') Curve? swapAnimationCurve,
+    Curve curve = Curves.linear,
   }) : super(
-          key: key,
-          duration: swapAnimationDuration,
-          curve: swapAnimationCurve,
+          duration: swapAnimationDuration ?? duration,
+          curve: swapAnimationCurve ?? curve,
         );
+
+  /// Determines how the [RadarChart] should be look like.
+  final RadarChartData data;
 
   @override
   _RadarChartState createState() => _RadarChartState();
@@ -42,16 +44,15 @@ class _RadarChartState extends AnimatedWidgetBaseState<RadarChart> {
     );
   }
 
-  RadarChartData _getDate() {
-    return widget.data;
-  }
+  RadarChartData _getDate() => widget.data;
 
   @override
-  void forEachTween(visitor) {
+  void forEachTween(TweenVisitor<dynamic> visitor) {
     _radarChartDataTween = visitor(
       _radarChartDataTween,
       widget.data,
-      (dynamic value) => RadarChartDataTween(begin: value, end: widget.data),
-    ) as RadarChartDataTween;
+      (dynamic value) =>
+          RadarChartDataTween(begin: value as RadarChartData, end: widget.data),
+    ) as RadarChartDataTween?;
   }
 }

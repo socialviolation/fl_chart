@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/widgets.dart';
+import 'package:fl_chart/src/chart/base/axis_chart/axis_chart_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Wraps a [child] widget and applies some default behaviours
 ///
@@ -8,58 +10,124 @@ import 'package:flutter/widgets.dart';
 /// It forces the widget to be close to the chart.
 /// It also applies a [space] to the chart.
 /// You can also fill [angle] in radians if you need to rotate your widget.
-class SideTitleWidget extends StatelessWidget {
-  final AxisSide axisSide;
+/// To force widget to be positioned within its axis bounding box,
+/// define [fitInside] by passing [SideTitleFitInsideData]
+class SideTitleWidget extends StatefulWidget {
+  const SideTitleWidget({
+    super.key,
+    required this.child,
+    required this.meta,
+    this.space = 8.0,
+    this.angle = 0.0,
+    this.fitInside = const SideTitleFitInsideData(
+      enabled: false,
+      distanceFromEdge: 0,
+      parentAxisSize: 0,
+      axisPosition: 0,
+    ),
+  });
+
+  final TitleMeta meta;
   final double space;
   final Widget child;
   final double angle;
 
-  const SideTitleWidget({
-    Key? key,
-    required this.child,
-    required this.axisSide,
-    this.space = 8.0,
-    this.angle = 0.0,
-  }) : super(key: key);
+  /// Define fitInside options with [SideTitleFitInsideData]
+  ///
+  /// To makes things simpler, it's recommended to use
+  /// [SideTitleFitInsideData.fromTitleMeta] and pass the
+  /// TitleMeta provided from [SideTitles.getTitlesWidget]
+  ///
+  /// If [fitInside.enabled] is true, the widget will be placed
+  /// inside the parent axis bounding box.
+  ///
+  /// Some translations will be applied to force
+  /// children to be positioned inside the parent axis bounding box.
+  ///
+  /// Will override the [SideTitleWidget.space] and caused
+  /// spacing between [SideTitles] children might be not equal.
+  final SideTitleFitInsideData fitInside;
 
-  Alignment _getAlignment() {
-    switch (axisSide) {
-      case AxisSide.left:
-        return Alignment.centerRight;
-      case AxisSide.top:
-        return Alignment.bottomCenter;
-      case AxisSide.right:
-        return Alignment.centerLeft;
-      case AxisSide.bottom:
-        return Alignment.topCenter;
-      default:
-        throw StateError("Invalid side");
-    }
+  @override
+  State<SideTitleWidget> createState() => _SideTitleWidgetState();
+}
+
+class _SideTitleWidgetState extends State<SideTitleWidget> {
+  Alignment _getAlignment() => switch (widget.meta.axisSide) {
+        AxisSide.left => Alignment.centerRight,
+        AxisSide.top => Alignment.bottomCenter,
+        AxisSide.right => Alignment.centerLeft,
+        AxisSide.bottom => Alignment.topCenter,
+      };
+
+  EdgeInsets _getMargin() => switch (widget.meta.axisSide) {
+        AxisSide.left => EdgeInsets.only(right: widget.space),
+        AxisSide.top => EdgeInsets.only(bottom: widget.space),
+        AxisSide.right => EdgeInsets.only(left: widget.space),
+        AxisSide.bottom => EdgeInsets.only(top: widget.space),
+      };
+
+  /// Calculate child width/height
+  final GlobalKey widgetKey = GlobalKey();
+  double? _childSize;
+
+  void _getChildSize(_) {
+    // If fitInside is false, no need to find child size
+    if (!widget.fitInside.enabled) return;
+
+    // If childSize is not null, no need to find the size anymore
+    if (_childSize != null) return;
+
+    final context = widgetKey.currentContext;
+    if (context == null) return;
+
+    // Set size based on its axis side
+    final size = switch (widget.meta.axisSide) {
+      AxisSide.left || AxisSide.right => context.size?.height ?? 0,
+      AxisSide.top || AxisSide.bottom => context.size?.width ?? 0,
+    };
+
+    // If childSize is the same, no need to set new value
+    if (_childSize == size) return;
+
+    setState(() => _childSize = size);
   }
 
-  EdgeInsets _getMargin() {
-    switch (axisSide) {
-      case AxisSide.left:
-        return EdgeInsets.only(right: space);
-      case AxisSide.top:
-        return EdgeInsets.only(bottom: space);
-      case AxisSide.right:
-        return EdgeInsets.only(left: space);
-      case AxisSide.bottom:
-        return EdgeInsets.only(top: space);
-      default:
-        throw StateError("Invalid side");
-    }
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback(_getChildSize);
+  }
+
+  @override
+  void didUpdateWidget(covariant SideTitleWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    SchedulerBinding.instance.addPostFrameCallback(_getChildSize);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: angle,
-      child: Container(
-        margin: _getMargin(),
-        alignment: _getAlignment(),
-        child: child,
+    return Transform.translate(
+      offset: !widget.fitInside.enabled
+          ? Offset.zero
+          : AxisChartHelper().calcFitInsideOffset(
+              axisSide: widget.meta.axisSide,
+              childSize: _childSize,
+              parentAxisSize: widget.fitInside.parentAxisSize,
+              axisPosition: widget.fitInside.axisPosition,
+              distanceFromEdge: widget.fitInside.distanceFromEdge,
+            ),
+      child: Transform.rotate(
+        angle: widget.angle,
+        child: Container(
+          key: widgetKey,
+          margin: _getMargin(),
+          alignment: _getAlignment(),
+          child: RotatedBox(
+            quarterTurns: -widget.meta.rotationQuarterTurns,
+            child: widget.child,
+          ),
+        ),
       ),
     );
   }

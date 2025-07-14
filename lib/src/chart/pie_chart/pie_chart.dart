@@ -1,30 +1,32 @@
+import 'package:fl_chart/src/chart/pie_chart/pie_chart_data.dart';
 import 'package:fl_chart/src/chart/pie_chart/pie_chart_renderer.dart';
 import 'package:flutter/material.dart';
 
-import 'pie_chart_data.dart';
-
 /// Renders a pie chart as a widget, using provided [PieChartData].
 class PieChart extends ImplicitlyAnimatedWidget {
+  /// [data] determines how the [PieChart] should be look like,
+  /// when you make any change in the [PieChartData], it updates
+  /// new values with animation, and duration is [duration].
+  /// also you can change the [curve]
+  /// which default is [Curves.linear].
+  const PieChart(
+    this.data, {
+    super.key,
+    @Deprecated('Please use [duration] instead')
+    Duration? swapAnimationDuration,
+    Duration duration = const Duration(milliseconds: 150),
+    @Deprecated('Please use [curve] instead') Curve? swapAnimationCurve,
+    Curve curve = Curves.linear,
+  }) : super(
+          duration: swapAnimationDuration ?? duration,
+          curve: swapAnimationCurve ?? curve,
+        );
+
   /// Default duration to reuse externally.
   static const defaultDuration = Duration(milliseconds: 150);
 
   /// Determines how the [PieChart] should be look like.
   final PieChartData data;
-
-  /// [data] determines how the [PieChart] should be look like,
-  /// when you make any change in the [PieChartData], it updates
-  /// new values with animation, and duration is [swapAnimationDuration].
-  /// also you can change the [swapAnimationCurve]
-  /// which default is [Curves.linear].
-  const PieChart(
-    this.data, {
-    Key? key,
-    Duration swapAnimationDuration = defaultDuration,
-    Curve swapAnimationCurve = Curves.linear,
-  }) : super(
-            key: key,
-            duration: swapAnimationDuration,
-            curve: swapAnimationCurve);
 
   /// Creates a [_PieChartState]
   @override
@@ -39,7 +41,7 @@ class _PieChartState extends AnimatedWidgetBaseState<PieChart> {
   @override
   void initState() {
     /// Make sure that [_widgetsPositionHandler] is updated.
-    _ambiguate(WidgetsBinding.instance)!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (mounted) {
         setState(() {});
       }
@@ -47,12 +49,6 @@ class _PieChartState extends AnimatedWidgetBaseState<PieChart> {
 
     super.initState();
   }
-
-  /// This allows a value of type T or T? to be treated as a value of type T?.
-  ///
-  /// We use this so that APIs that have become non-nullable can still be used
-  /// with `!` and `?` to support older versions of the API as well.
-  T? _ambiguate<T>(T? value) => value;
 
   @override
   Widget build(BuildContext context) {
@@ -71,24 +67,25 @@ class _PieChartState extends AnimatedWidgetBaseState<PieChart> {
   }
 
   @override
-  void forEachTween(visitor) {
+  void forEachTween(TweenVisitor<dynamic> visitor) {
     _pieChartDataTween = visitor(
       _pieChartDataTween,
       widget.data,
-      (dynamic value) => PieChartDataTween(begin: value, end: widget.data),
-    ) as PieChartDataTween;
+      (dynamic value) =>
+          PieChartDataTween(begin: value as PieChartData, end: widget.data),
+    ) as PieChartDataTween?;
   }
 }
 
 /// Positions the badge widgets on their respective sections.
 class BadgeWidgetsDelegate extends MultiChildLayoutDelegate {
-  final int badgeWidgetsCount;
-  final Map<int, Offset> badgeWidgetsOffsets;
-
   BadgeWidgetsDelegate({
     required this.badgeWidgetsCount,
     required this.badgeWidgetsOffsets,
   });
+
+  final int badgeWidgetsCount;
+  final Map<int, Offset> badgeWidgetsOffsets;
 
   @override
   void performLayout(Size size) {

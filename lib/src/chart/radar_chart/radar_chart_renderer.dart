@@ -1,30 +1,37 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:fl_chart/src/chart/base/base_chart/render_base_chart.dart';
+import 'package:fl_chart/src/chart/radar_chart/radar_chart_painter.dart';
 import 'package:fl_chart/src/utils/canvas_wrapper.dart';
 import 'package:flutter/cupertino.dart';
-
-import 'radar_chart_painter.dart';
 
 // coverage:ignore-start
 
 /// Low level RadarChart Widget.
 class RadarChartLeaf extends LeafRenderObjectWidget {
-  const RadarChartLeaf({Key? key, required this.data, required this.targetData})
-      : super(key: key);
+  const RadarChartLeaf({
+    super.key,
+    required this.data,
+    required this.targetData,
+  });
 
-  final RadarChartData data, targetData;
+  final RadarChartData data;
+  final RadarChartData targetData;
 
   @override
   RenderRadarChart createRenderObject(BuildContext context) => RenderRadarChart(
-      context, data, targetData, MediaQuery.of(context).textScaleFactor);
+        context,
+        data,
+        targetData,
+        MediaQuery.of(context).textScaler,
+      );
 
   @override
   void updateRenderObject(BuildContext context, RenderRadarChart renderObject) {
     renderObject
       ..data = data
       ..targetData = targetData
-      ..textScale = MediaQuery.of(context).textScaleFactor
+      ..textScaler = MediaQuery.of(context).textScaler
       ..buildContext = context;
   }
 }
@@ -32,12 +39,15 @@ class RadarChartLeaf extends LeafRenderObjectWidget {
 
 /// Renders our RadarChart, also handles hitTest.
 class RenderRadarChart extends RenderBaseChart<RadarTouchResponse> {
-  RenderRadarChart(BuildContext context, RadarChartData data,
-      RadarChartData targetData, double textScale)
-      : _data = data,
+  RenderRadarChart(
+    BuildContext context,
+    RadarChartData data,
+    RadarChartData targetData,
+    TextScaler textScaler,
+  )   : _data = data,
         _targetData = targetData,
-        _textScale = textScale,
-        super(targetData.radarTouchData, context);
+        _textScaler = textScaler,
+        super(targetData.radarTouchData, context, canBeScaled: false);
 
   RadarChartData get data => _data;
   RadarChartData _data;
@@ -58,12 +68,12 @@ class RenderRadarChart extends RenderBaseChart<RadarTouchResponse> {
     markNeedsPaint();
   }
 
-  double get textScale => _textScale;
-  double _textScale;
+  TextScaler get textScaler => _textScaler;
+  TextScaler _textScaler;
 
-  set textScale(double value) {
-    if (_textScale == value) return;
-    _textScale = value;
+  set textScaler(TextScaler value) {
+    if (_textScaler == value) return;
+    _textScaler = value;
     markNeedsPaint();
   }
 
@@ -72,17 +82,16 @@ class RenderRadarChart extends RenderBaseChart<RadarTouchResponse> {
   Size? mockTestSize;
 
   @visibleForTesting
-  var painter = RadarChartPainter();
+  RadarChartPainter painter = RadarChartPainter();
 
-  PaintHolder<RadarChartData> get paintHolder {
-    return PaintHolder(data, targetData, textScale);
-  }
+  PaintHolder<RadarChartData> get paintHolder =>
+      PaintHolder(data, targetData, textScaler);
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final canvas = context.canvas;
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
+    final canvas = context.canvas
+      ..save()
+      ..translate(offset.dx, offset.dy);
     painter.paint(
       buildContext,
       CanvasWrapper(canvas, mockTestSize ?? size),
@@ -93,11 +102,13 @@ class RenderRadarChart extends RenderBaseChart<RadarTouchResponse> {
 
   @override
   RadarTouchResponse getResponseAtLocation(Offset localPosition) {
-    var touchedSpot = painter.handleTouch(
-      localPosition,
-      mockTestSize ?? size,
-      paintHolder,
+    return RadarTouchResponse(
+      touchLocation: localPosition,
+      touchedSpot: painter.handleTouch(
+        localPosition,
+        mockTestSize ?? size,
+        paintHolder,
+      ),
     );
-    return RadarTouchResponse(touchedSpot);
   }
 }

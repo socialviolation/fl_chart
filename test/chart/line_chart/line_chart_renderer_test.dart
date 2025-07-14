@@ -1,64 +1,74 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:fl_chart/src/chart/line_chart/line_chart_painter.dart';
 import 'package:fl_chart/src/chart/line_chart/line_chart_renderer.dart';
 import 'package:fl_chart/src/utils/canvas_wrapper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+
 import '../data_pool.dart';
 import 'line_chart_renderer_test.mocks.dart';
 
 @GenerateMocks([Canvas, PaintingContext, BuildContext, LineChartPainter])
 void main() {
   group('LineChartRenderer', () {
-    final LineChartData data = LineChartData(
-        titlesData: FlTitlesData(
-      leftTitles: AxisTitles(
-          sideTitles: SideTitles(reservedSize: 20, showTitles: true)),
-      rightTitles: AxisTitles(
-          sideTitles: SideTitles(reservedSize: 464, showTitles: true)),
-      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-    ));
+    final data = LineChartData(
+      titlesData: const FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(reservedSize: 20, showTitles: true),
+        ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(reservedSize: 464, showTitles: true),
+        ),
+        topTitles: AxisTitles(),
+        bottomTitles: AxisTitles(),
+      ),
+    );
 
-    final LineChartData targetData = LineChartData(
-        titlesData: FlTitlesData(
-      leftTitles:
-          AxisTitles(sideTitles: SideTitles(reservedSize: 8, showTitles: true)),
-      rightTitles: AxisTitles(
-          sideTitles: SideTitles(reservedSize: 20, showTitles: true)),
-      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-    ));
+    final targetData = LineChartData(
+      titlesData: const FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(reservedSize: 8, showTitles: true),
+        ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(reservedSize: 20, showTitles: true),
+        ),
+        topTitles: AxisTitles(),
+        bottomTitles: AxisTitles(),
+      ),
+    );
 
-    const textScale = 4.0;
+    const textScaler = TextScaler.linear(4);
 
-    MockBuildContext mockBuildContext = MockBuildContext();
-    RenderLineChart renderLineChart = RenderLineChart(
+    final mockBuildContext = MockBuildContext();
+    final renderLineChart = RenderLineChart(
       mockBuildContext,
       data,
       targetData,
-      textScale,
+      textScaler,
+      null,
+      canBeScaled: false,
     );
 
-    MockLineChartPainter mockPainter = MockLineChartPainter();
-    MockPaintingContext mockPaintingContext = MockPaintingContext();
-    MockCanvas mockCanvas = MockCanvas();
-    Size mockSize = const Size(44, 44);
+    final mockPainter = MockLineChartPainter();
+    final mockPaintingContext = MockPaintingContext();
+    final mockCanvas = MockCanvas();
+    const mockSize = Size(44, 44);
     when(mockPaintingContext.canvas).thenAnswer((realInvocation) => mockCanvas);
-    renderLineChart.mockTestSize = mockSize;
-    renderLineChart.painter = mockPainter;
+    renderLineChart
+      ..mockTestSize = mockSize
+      ..painter = mockPainter;
 
     test('test 1 correct data set', () {
       expect(renderLineChart.data == data, true);
       expect(renderLineChart.data == targetData, false);
       expect(renderLineChart.targetData == targetData, true);
-      expect(renderLineChart.textScale == textScale, true);
+      expect(renderLineChart.textScaler == textScaler, true);
       expect(renderLineChart.paintHolder.data == data, true);
       expect(renderLineChart.paintHolder.targetData == targetData, true);
-      expect(renderLineChart.paintHolder.textScale == textScale, true);
+      expect(renderLineChart.paintHolder.textScaler == textScaler, true);
     });
 
     test('test 2 check paint function', () {
@@ -75,44 +85,85 @@ void main() {
       final paintHolder = result.captured[1] as PaintHolder;
       expect(paintHolder.data, data);
       expect(paintHolder.targetData, targetData);
-      expect(paintHolder.textScale, textScale);
+      expect(paintHolder.textScaler, textScaler);
 
       verify(mockCanvas.restore()).called(1);
     });
 
     test('test 3 check getResponseAtLocation function', () {
-      List<Map<String, dynamic>> results = [];
+      final results = <Map<String, dynamic>>[];
       when(mockPainter.handleTouch(captureAny, captureAny, captureAny))
           .thenAnswer((inv) {
         results.add({
           'local_position': inv.positionalArguments[0] as Offset,
           'size': inv.positionalArguments[1] as Size,
-          'paint_holder': (inv.positionalArguments[2] as PaintHolder),
+          'paint_holder': inv.positionalArguments[2] as PaintHolder,
         });
         return MockData.lineTouchResponse1.lineBarSpots;
       });
+      when(mockPainter.getChartCoordinateFromPixel(any, any, any))
+          .thenAnswer((_) => const Offset(10, 10));
       final touchResponse =
           renderLineChart.getResponseAtLocation(MockData.offset1);
       expect(
         touchResponse.lineBarSpots,
         MockData.lineTouchResponse1.lineBarSpots,
       );
+      expect(touchResponse.touchChartCoordinate, const Offset(10, 10));
       expect(results[0]['local_position'] as Offset, MockData.offset1);
       expect(results[0]['size'] as Size, mockSize);
       final paintHolder = results[0]['paint_holder'] as PaintHolder;
       expect(paintHolder.data, data);
       expect(paintHolder.targetData, targetData);
-      expect(paintHolder.textScale, textScale);
+      expect(paintHolder.textScaler, textScaler);
     });
 
     test('test 4 check setters', () {
-      renderLineChart.data = targetData;
-      renderLineChart.targetData = data;
-      renderLineChart.textScale = 22;
+      renderLineChart
+        ..data = targetData
+        ..targetData = data
+        ..textScaler = const TextScaler.linear(22);
 
       expect(renderLineChart.data, targetData);
       expect(renderLineChart.targetData, data);
-      expect(renderLineChart.textScale, 22);
+      expect(renderLineChart.textScaler, const TextScaler.linear(22));
+    });
+
+    test('passes chart virtual rect to paint holder', () {
+      final rect1 = Offset.zero & const Size(100, 100);
+      final renderLineChart = RenderLineChart(
+        mockBuildContext,
+        data,
+        targetData,
+        textScaler,
+        null,
+        canBeScaled: false,
+      );
+
+      expect(renderLineChart.chartVirtualRect, isNull);
+      expect(renderLineChart.paintHolder.chartVirtualRect, isNull);
+
+      renderLineChart.chartVirtualRect = rect1;
+
+      expect(renderLineChart.chartVirtualRect, rect1);
+      expect(renderLineChart.paintHolder.chartVirtualRect, rect1);
+    });
+
+    test('uses canBeScaled', () {
+      final renderLineChart = RenderLineChart(
+        mockBuildContext,
+        data,
+        targetData,
+        textScaler,
+        null,
+        canBeScaled: false,
+      );
+
+      expect(renderLineChart.canBeScaled, false);
+
+      renderLineChart.canBeScaled = true;
+
+      expect(renderLineChart.canBeScaled, true);
     });
   });
 }
