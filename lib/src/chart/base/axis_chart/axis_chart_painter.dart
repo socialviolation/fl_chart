@@ -67,9 +67,7 @@ abstract class AxisChartPainter<D extends AxisChartData>
           );
       final axisValues = AxisChartHelper().iterateThroughAxis(
         min: data.minX,
-        minIncluded: true,
         max: data.maxX,
-        maxIncluded: true,
         baseLine: data.baselineX,
         interval: verticalInterval,
       );
@@ -112,9 +110,7 @@ abstract class AxisChartPainter<D extends AxisChartData>
 
       final axisValues = AxisChartHelper().iterateThroughAxis(
         min: data.minY,
-        minIncluded: false,
         max: data.maxY,
-        maxIncluded: false,
         baseLine: data.baselineY,
         interval: horizontalInterval,
       );

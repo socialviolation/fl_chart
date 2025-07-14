@@ -85,10 +85,10 @@ class _SideTitlesWidgetState extends State<SideTitlesWidget> {
     return switch (widget.side) {
       AxisSide.right ||
       AxisSide.left =>
-        titlesPadding.onlyTopBottom + borderPadding.onlyTopBottom,
+        (titlesPadding.onlyTopBottom + borderPadding.onlyTopBottom) * 0.5,
       AxisSide.top ||
       AxisSide.bottom =>
-        titlesPadding.onlyLeftRight + borderPadding.onlyLeftRight,
+        (titlesPadding.onlyLeftRight + borderPadding.onlyLeftRight) * 0.5,
     };
   }
 
@@ -98,10 +98,10 @@ class _SideTitlesWidgetState extends State<SideTitlesWidget> {
     return switch (widget.side) {
       AxisSide.right ||
       AxisSide.left =>
-        titlesPadding.vertical + borderPadding.vertical,
+        (titlesPadding.vertical + borderPadding.vertical) * 0.5,
       AxisSide.top ||
       AxisSide.bottom =>
-        titlesPadding.horizontal + borderPadding.horizontal,
+        (titlesPadding.horizontal + borderPadding.horizontal) * 0.5,
     };
   }
 
@@ -242,43 +242,52 @@ class _SideTitlesWidgetState extends State<SideTitlesWidget> {
     final axisViewSize = isHorizontal ? viewSize.width : viewSize.height;
     return Align(
       alignment: alignment,
-      child: Flex(
-        direction: counterDirection,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isLeftOrTop && axisTitles.axisNameWidget != null)
-            _AxisTitleWidget(
-              axisTitles: axisTitles,
-              side: widget.side,
-              axisViewSize: axisViewSize,
-            ),
-          if (sideTitles.showTitles)
-            Container(
-              width: isHorizontal ? axisViewSize : sideTitles.reservedSize,
-              height: isHorizontal ? sideTitles.reservedSize : axisViewSize,
-              margin: thisSidePadding,
-              child: SideTitlesFlex(
-                direction: direction,
-                axisSideMetaData: AxisSideMetaData(
-                  axisMin,
-                  axisMax,
-                  axisViewSize - thisSidePaddingTotal,
+      child: IntrinsicWidth(
+        child: IntrinsicHeight(
+          child: Flex(
+            direction: counterDirection,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isLeftOrTop && axisTitles.axisNameWidget != null)
+                Flexible(
+                  child: _AxisTitleWidget(
+                    axisTitles: axisTitles,
+                    side: widget.side,
+                    axisViewSize: axisViewSize,
+                  ),
                 ),
-                widgetHolders: makeWidgets(
-                  axisViewSize - thisSidePaddingTotal,
-                  axisMin,
-                  axisMax,
-                  widget.side,
+              if (sideTitles.showTitles)
+                Flexible(
+                  child: SizedBox(
+                    width: isHorizontal ? axisViewSize : sideTitles.reservedSize,
+                    height: isHorizontal ? sideTitles.reservedSize : axisViewSize,
+                    child: SideTitlesFlex(
+                      direction: direction,
+                      axisSideMetaData: AxisSideMetaData(
+                        axisMin,
+                        axisMax,
+                        axisViewSize - thisSidePaddingTotal,
+                      ),
+                      widgetHolders: makeWidgets(
+                        axisViewSize - thisSidePaddingTotal,
+                        axisMin,
+                        axisMax,
+                        widget.side,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          if (isRightOrBottom && axisTitles.axisNameWidget != null)
-            _AxisTitleWidget(
-              axisTitles: axisTitles,
-              side: widget.side,
-              axisViewSize: axisViewSize,
-            ),
-        ],
+              if (isRightOrBottom && axisTitles.axisNameWidget != null)
+                Flexible(
+                  child: _AxisTitleWidget(
+                    axisTitles: axisTitles,
+                    side: widget.side,
+                    axisViewSize: axisViewSize,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -306,9 +315,11 @@ class _AxisTitleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: isHorizontal ? axisViewSize : axisTitles.axisNameSize,
-      height: isHorizontal ? axisTitles.axisNameSize : axisViewSize,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: isHorizontal ? axisViewSize : axisTitles.axisNameSize,
+        maxHeight: isHorizontal ? axisTitles.axisNameSize : axisViewSize,
+      ),
       child: Center(
         child: RotatedBox(
           quarterTurns: axisNameQuarterTurns,

@@ -57,7 +57,7 @@ class AxisChartHelper {
   }
 
   bool overlaps(double position, double marker, int count, double diff) {
-    var buffer = (count * 3 / 100) * diff;
+    final buffer = (count * 3 / 100) * diff;
     return marker - buffer <= position && position <= marker + buffer;
   }
 
