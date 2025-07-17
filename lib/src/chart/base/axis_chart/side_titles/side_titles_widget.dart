@@ -177,6 +177,12 @@ class _SideTitlesWidgetState extends State<SideTitlesWidget> {
         }
         final axisLocation = portion * axisViewSize + axisOffset;
         return AxisSideTitleMetaData(axisValue, axisLocation);
+      }).where((metaData) {
+        // Skip rendering the bottom y value (minimum value) for left/right axes to prevent clash with x-axis
+        if (isVertical && metaData.axisValue == axisMin) {
+          return false;
+        }
+        return true;
       }).toList();
     }
 

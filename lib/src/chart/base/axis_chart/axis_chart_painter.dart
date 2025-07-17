@@ -110,7 +110,9 @@ abstract class AxisChartPainter<D extends AxisChartData>
 
       final axisValues = AxisChartHelper().iterateThroughAxis(
         min: data.minY,
+        minIncluded: false,
         max: data.maxY,
+        maxIncluded: false,
         baseLine: data.baselineY,
         interval: horizontalInterval,
       );
@@ -302,18 +304,24 @@ abstract class AxisChartPainter<D extends AxisChartData>
 
         if (line.label.show) {
           final label = line.label;
-          final style =
-              TextStyle(fontSize: 11, color: line.color).merge(label.style);
-          final padding = label.padding as EdgeInsets;
+          final style = TextStyle(fontSize: 13, color: line.color, overflow: TextOverflow.fade, fontWeight: FontWeight.w600).merge(label.style);
+          final padding = (label.padding as EdgeInsets).copyWith(
+            left: (label.padding as EdgeInsets).left + 4,
+            right: (label.padding as EdgeInsets).right + 4,
+            top: (label.padding as EdgeInsets).top + 2,
+            bottom: (label.padding as EdgeInsets).bottom + 2,
+          );
 
           final span = TextSpan(
-            text: label.labelResolver(line),
-            style: Utils().getThemeAwareTextStyle(context, style),
+            text: '${label.labelResolver(line)}        .',
+            style: Utils().getThemeAwareTextStyle(context, style.copyWith(fontSize: (style.fontSize ?? 13) + 1, letterSpacing: .4)),
           );
 
           final tp = TextPainter(
             text: span,
             textDirection: TextDirection.ltr,
+            maxLines: 1,
+            textAlign: TextAlign.center,
           )..layout();
 
           switch (label.direction) {
@@ -324,7 +332,7 @@ abstract class AxisChartPainter<D extends AxisChartData>
                   Rect.fromLTRB(
                     from.dx + padding.left,
                     from.dy - padding.bottom - tp.height,
-                    to.dx - padding.right - tp.width,
+                    viewSize.width,
                     to.dy + padding.top,
                   ),
                 ),

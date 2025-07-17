@@ -171,6 +171,9 @@ Widget defaultGetTitle(double value, TitleMeta meta) {
     meta: meta,
     child: Text(
       meta.formattedValue,
+      overflow: TextOverflow.clip,
+      softWrap: false,
+      maxLines: 1,
     ),
   );
 }

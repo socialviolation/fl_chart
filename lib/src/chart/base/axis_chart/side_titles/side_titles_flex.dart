@@ -162,8 +162,8 @@ class AxisSideTitlesRenderFlex extends RenderBox
         Axis.horizontal => BoxConstraints.tightFor(
             height: constraints.maxHeight,
           ),
-        Axis.vertical => BoxConstraints.tightFor(
-            width: constraints.maxWidth,
+        Axis.vertical => BoxConstraints(
+            maxHeight: constraints.maxHeight,
           ),
       };
 
