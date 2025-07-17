@@ -424,7 +424,7 @@ class FlTitlesData with EquatableMixin {
     this.show = true,
     this.leftTitles = const AxisTitles(
       sideTitles: SideTitles(
-        reservedSize: 44,
+        reservedSize: 28,
         showTitles: true,
       ),
     ),
@@ -436,7 +436,7 @@ class FlTitlesData with EquatableMixin {
     ),
     this.rightTitles = const AxisTitles(
       sideTitles: SideTitles(
-        reservedSize: 44,
+        reservedSize: 28,
         showTitles: true,
       ),
     ),
