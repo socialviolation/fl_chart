@@ -312,8 +312,10 @@ abstract class AxisChartPainter<D extends AxisChartData>
             bottom: (label.padding as EdgeInsets).bottom + 2,
           );
 
+          final labelText = label.labelResolver(line);
+          final firstValue = labelText.split(' ').first;
           final span = TextSpan(
-            text: '${label.labelResolver(line)}        .',
+            text: firstValue,
             style: Utils().getThemeAwareTextStyle(context, style.copyWith(fontSize: (style.fontSize ?? 13) + 1, letterSpacing: .4)),
           );
 
