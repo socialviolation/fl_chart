@@ -1047,8 +1047,8 @@ class LineTouchTooltipData with EquatableMixin {
   const LineTouchTooltipData({
     BorderRadius? tooltipBorderRadius,
     this.tooltipPadding =
-        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    this.tooltipMargin = 8,
+        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    this.tooltipMargin = 4,
     this.tooltipHorizontalAlignment = FLHorizontalAlignment.center,
     this.tooltipHorizontalOffset = 0,
     this.maxContentWidth = 120,
