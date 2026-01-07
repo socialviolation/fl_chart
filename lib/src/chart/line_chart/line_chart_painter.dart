@@ -1077,7 +1077,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
   ) {
     final viewSize = canvasWrapper.size;
 
-    const textsBelowMargin = 4;
+    const textsBelowMargin = 2;
 
     // Get the dot height if available
     final dotHeight = _getDotHeight(

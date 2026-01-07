@@ -1047,15 +1047,15 @@ class LineTouchTooltipData with EquatableMixin {
   const LineTouchTooltipData({
     BorderRadius? tooltipBorderRadius,
     this.tooltipPadding =
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    this.tooltipMargin = 16,
+        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    this.tooltipMargin = 8,
     this.tooltipHorizontalAlignment = FLHorizontalAlignment.center,
     this.tooltipHorizontalOffset = 0,
     this.maxContentWidth = 120,
     this.getTooltipItems = defaultLineTooltipItem,
     this.getTooltipColor = defaultLineTooltipColor,
-    this.fitInsideHorizontally = false,
-    this.fitInsideVertically = false,
+    this.fitInsideHorizontally = true,
+    this.fitInsideVertically = true,
     this.showOnTopOfTheChartBoxArea = false,
     this.rotateAngle = 0.0,
     this.tooltipBorder = BorderSide.none,
@@ -1066,7 +1066,7 @@ class LineTouchTooltipData with EquatableMixin {
 
   /// Sets a rounded radius for the tooltip.
   BorderRadius get tooltipBorderRadius =>
-      _tooltipBorderRadius ?? BorderRadius.circular(4);
+      _tooltipBorderRadius ?? BorderRadius.circular(2);
 
   /// Applies a padding for showing contents inside the tooltip.
   final EdgeInsets tooltipPadding;
